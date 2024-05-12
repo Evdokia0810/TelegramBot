@@ -37,7 +37,7 @@ create_database_table()
 # Обработчик команды /start
 def start_command(update: Update, context: CallbackContext) -> None:
     update.message.reply_text("Привет! Я бот, который поможет тебе сохранять статьи для чтения :)\n\n"
-                              "- Просто отправь мне ссылку на статью, и я ее сохраню.\n\n"
+                              "- Просто отправь мне ссылку на статью в формате 'https://example.com.', и я ее сохраню.\n\n"
                               "- Чтобы получить случайную сохраненную статью, введи /get_random_article.\n\n"
                               "Приятного чтения!")
 
