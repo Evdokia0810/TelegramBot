@@ -1,24 +1,24 @@
-import os
 import logging
 import psycopg2
 from telegram import Update
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
+import re
 
-# Настройка логгирования
+# Настраиваем логгирования
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Получение токена бота и данных для подключения к базе данных из переменных окружения
+# Токен бота и данные для подключения к базе данных
 TOKEN = '6580465417:AAFy9A-X4mKYTfzeT9eUgBSj_SG_rC9S1d8'
 DB_URL = 'postgresql://test_user:test123@localhost/postgres'
 
-# Функция для подключения к базе данных
+# Подключаемся к базе данных
 def connect_to_db():
     return psycopg2.connect(DB_URL)
 
-# Функция для создания таблицы в базе данных, если она не существует
+# Создаем таблицу в базе данных, если она первоначально не существует
 def create_database_table():
-    conn = psycopg2.connect(DB_URL)
+    conn = connect_to_db()
     cursor = conn.cursor()
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS saved_articles (
@@ -31,31 +31,32 @@ def create_database_table():
     cursor.close()
     conn.close()
 
+# Получение курсора и соединение с базой данных
 def get_cursor():
     conn = connect_to_db()
     return conn.cursor(), conn
 
+# Закрываем соединения с базой данных
 def close_connection(cursor, conn):
     cursor.close()
     conn.close()
 
-# Обработчик команды /start
+# Команда /start
 def start(update: Update, context: CallbackContext) -> None:
     update.message.reply_text("Привет! Я бот, который поможет тебе сохранять статьи для чтения :)\n\n"
                               "- Просто отправь мне ссылку на статью, и я ее сохраню.\n\n"
                               "- Чтобы получить случайную сохраненную статью, введи /get_random_article.\n\n"
                               "Приятного чтения!")
 
-# Функция для сохранения статьи в базе данных
+# Сохраненяем статью в базе данных
 def save(update: Update, context: CallbackContext) -> None:
     user_id = update.message.from_user.id
-    article_urls = update.message.text.split()
+    article_url = update.message.text.strip()
 
-    if len(article_urls) > 1:
-        update.message.reply_text("Ошибка! Пожалуйста, введите только одну ссылку в одном сообщении.")
+    # Проверяем на корректность ссылки
+    if not re.match(r'^https?://\S+$', article_url):
+        update.message.reply_text("Ошибка! Пожалуйста, введите корректную ссылку на статью.")
         return
-
-    article_url = article_urls[0]
 
     try:
         cursor, conn = get_cursor()
@@ -72,7 +73,7 @@ def save(update: Update, context: CallbackContext) -> None:
     finally:
         close_connection(cursor, conn)
 
-# Обработчик команды /get_random_article
+# Получаем случайную сохраненную статью из базы данных
 def get_random_article(update: Update, context: CallbackContext) -> None:
     user_id = update.message.from_user.id
     try:
@@ -90,11 +91,11 @@ def get_random_article(update: Update, context: CallbackContext) -> None:
     finally:
         close_connection(cursor, conn)
 
-# Обработчик неизвестных команд
+# неизвестные команды
 def unknown(update: Update, context: CallbackContext) -> None:
     update.message.reply_text("Извините, я не понимаю вашу команду. Пожалуйста, попробуйте еще раз.")
 
-# Запуск бота
+# Основная функция, которая запускает бота
 def main() -> None:
     create_database_table()
     updater = Updater(TOKEN)    
