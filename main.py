@@ -4,7 +4,7 @@ from telegram import Update
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
 import re
 
-# Настраиваем логгирования
+# Логгирование
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -16,7 +16,7 @@ DB_URL = 'postgresql://test_user:test123@localhost/postgres'
 def connect_to_db():
     return psycopg2.connect(DB_URL)
 
-# Создаем таблицу в базе данных, если она первоначально не существует
+# Создаем таблицу в базе данных, если ее первоначально не существовало
 def create_database_table():
     conn = connect_to_db()
     cursor = conn.cursor()
