@@ -1,12 +1,7 @@
-import logging
 import psycopg2
 from telegram import Update
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
 import re
-
-# Логгирование
-logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
-logger = logging.getLogger(__name__)
 
 # Токен бота и данные для подключения к базе данных
 TOKEN = '6580465417:AAFy9A-X4mKYTfzeT9eUgBSj_SG_rC9S1d8'
